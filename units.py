@@ -2,7 +2,6 @@ from tile import Tile
 from config import *
 import pygame
 
-
 class Animator():
     def __init__(self, animation_key, tile, unit_texture_loader, animation_speed=1.0):
         self.animation_key = animation_key
@@ -35,10 +34,11 @@ class Animator():
         texture_index = start + self.frame
 
         texture = self.texture_loader.get_texture((texture_index, 0))
-        texture = pygame.transform.flip(texture,1,0)
-        # if 
+        
+        if self.current_animation == "right":
+            texture = pygame.transform.flip(texture,1,0)
 
-        # self.tile.texture = self.texture_loader.get_texture((texture_index, 0))
+
         self.tile.texture = texture
 
 class Unit:
@@ -57,8 +57,12 @@ class Unit:
         self.is_selected = False
         self.selected_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["default"])
         self.selected_tile = Tile(self.engine,self.selected_texture,(self.x,self.y))
-
         self.animator = Animator(texture_key, self.tile, self.texture_loader, animation_speed=1.0)
+
+        self.path = []
+        self.movespeed = 2 #tiles per second
+        self.movetimer = 0
+        self.move_interval = 1/self.movespeed
 
     def update(self, dt):
         
@@ -71,7 +75,29 @@ class Unit:
 
         self.animator.update(dt)
 
+        self.movetimer += dt
+
+        if self.movetimer >= self.move_interval and self.path != []:
+            path = self.path.pop(0)
+            self.move(path[0],path[1])
+            self.movetimer = 0
+
+        if self.path == []:
+            self.animator.set_animation("idle")
+
     def move(self,x,y):
+
+        if self.x < x:
+            self.animator.set_animation("right")
+        elif self.x > x:
+            self.animator.set_animation("left")
+        elif self.y > y:
+            self.animator.set_animation("up")
+        elif self.y < y:
+            self.animator.set_animation("down")
+
+
+
         self.x = x
         self.y = y
 
@@ -87,7 +113,10 @@ class Unit:
 
 
     def draw_at(self, screen_x, screen_y):
-        self.tile.draw_at(screen_x, screen_y)
+        #grunt tiles are 9x10
+        tile_offset_y = 2
+        tile_offset_x = 1
+        self.tile.draw_at(screen_x-tile_offset_x, screen_y-tile_offset_y)
 
         if self.is_selected:
             self.selected_tile.draw_at(screen_x, screen_y)

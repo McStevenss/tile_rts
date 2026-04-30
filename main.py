@@ -13,50 +13,28 @@ from camera import Camera
 
 class Engine:
     def __init__(self):
-        self.screen_width = 1080
-        self.screen_height = 1150
-        self.size = (self.screen_width, self.screen_height)
-        self.display_screen = pygame.display.set_mode(self.size) 
+        self.setup_screens("RTS Game")
 
-        self.target_size = (1080, 1080)
-
-        self.game_screen_width = 256
-        self.game_screen_height = 256
-
-        # self.game_screen_width = 24*8
-        # self.game_screen_height = 24*8
-
-        self.screen_ratio_x = self.game_screen_width/self.target_size[0]
-        self.screen_ratio_y = self.game_screen_height/self.target_size[1]
-
-        # self.screen_ratio_x = self.game_screen_width/self.screen_width
-        # self.screen_ratio_y = self.game_screen_height/self.screen_height
-
-        self.screen = pygame.Surface((self.game_screen_width,self.game_screen_height)) 
-
-        self.display_ratio = (self.screen_width/self.game_screen_width, self.screen_height/self.game_screen_height)
         self.tick_rate = 60
-        pygame.display.set_caption("Tile_base")
-        self.done = False 
+        self.dt = 0 
         self.clock = pygame.time.Clock()
+  
+        self.done = False 
+        
         self.event_handler = EventHandler()
-        self.tile_atlas = TILE_ATLAS
-
         self.event_handler.subscribe("create_entity",self.on_create_entity)
         self.event_handler.subscribe("m_released",self.on_mouse_pressed)
+        self.tile_atlas = TILE_ATLAS
+
         self.texture_loader = TextureLoader(engine=self,spritesheet_path="textures/tilesheet.png",spritesheet_tilesize=8)
         self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
-
-        self.test_unit = Unit(self,"grunt",(2,2))
-        self.dt = 0 
-        #Local controller
-        self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
         self.map = Map(self,texture_loader=self.texture_loader, width=MAP_SIZE[0],height=MAP_SIZE[1])
-
         self.camera = Camera(view_size=(32,32))
         self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
 
-
+        self.test_unit = Unit(self,"grunt",(2,2))
+        # #Local controller
+        # self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
@@ -69,12 +47,31 @@ class Engine:
 
 
         self.draw_debug = False
-        #mouse
-        # pygame.mouse.set_visible(0)
         pygame.mouse.set_visible(1)
         self.mouse = GameMouse(self)
 
         self.placement_active = False
+
+    def setup_screens(self, windowTitle="Tile_base"):
+        self.screen_width = 1080
+        self.screen_height = 1150
+
+        self.target_size = (1080, 1080)
+
+        self.game_screen_width = 256
+        self.game_screen_height = 256
+
+        #Setup main display and game display
+        self.size = (self.screen_width, self.screen_height)
+        self.display_screen = pygame.display.set_mode(self.size) 
+        self.screen = pygame.Surface((self.game_screen_width,self.game_screen_height)) 
+
+        #Calculate game vs screen ratio
+        self.screen_ratio_x = self.game_screen_width/self.target_size[0]
+        self.screen_ratio_y = self.game_screen_height/self.target_size[1]
+        self.display_ratio = (self.screen_width/self.game_screen_width, self.screen_height/self.game_screen_height)
+
+        pygame.display.set_caption(windowTitle)
 
     def on_mouse_pressed(self,data):
         event_type, *event_data = data
@@ -84,6 +81,17 @@ class Engine:
             entity = self.entity_handler.get_entity(int(tx),int(ty))
             if entity is not None:
                 entity.is_selected = not entity.is_selected
+                return
+            
+            unit = self.unit_handler.get_unit(int(tx),int(ty))
+            if unit is not None:
+                unit.is_selected = not unit.is_selected
+                return
+            
+
+            path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y),int(tx),int(ty), self.entity_handler.entities)
+            self.test_unit.path = path
+
         
     def on_create_entity(self,data):
         if not self.placement_active:
@@ -107,27 +115,6 @@ class Engine:
 
                 if event.key == pygame.K_1 and keys[pygame.K_1]:
                    self.placement_active = not self.placement_active
-
-                # if event.key == pygame.K_LEFT and keys[pygame.K_LEFT]:
-                #     self.event_handler.post_event(
-                #     "arrows_pressed", ("left",(-1,0))
-                # )
-                
-                # if event.key == pygame.K_RIGHT and keys[pygame.K_RIGHT]:
-                #     self.event_handler.post_event(
-                #     "arrows_pressed", ("right",(1,0))
-                # )
-                    
-                # if event.key == pygame.K_UP and keys[pygame.K_UP]:
-                #     self.event_handler.post_event(
-                #     "arrows_pressed", ("up",(0,-1))
-                # )
-                
-                # if event.key == pygame.K_DOWN and keys[pygame.K_DOWN]:
-                #     self.event_handler.post_event(
-                #     "arrows_pressed", ("down",(0,1))
-                # )
-
 
         self.handle_input(keys)
         self.kpressed = keys

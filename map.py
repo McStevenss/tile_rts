@@ -7,6 +7,8 @@ from texture_loader import TextureLoader
 from player import Player
 from config import *
 from camera import Camera
+from pathfind import astar
+
 
 class Map:
     def __init__(self, engine,texture_loader:TextureLoader, width, height):
@@ -64,6 +66,9 @@ class Map:
         
         return True
     
+    def find_path(self,start_x,start_y, target_x,target_y, additional = None):
+        return astar(self, (start_x,start_y), (target_x,target_y), additional)
+
     def convert_color(self, np_color):
         r,g,b = np_color
         color = (r,g,b)

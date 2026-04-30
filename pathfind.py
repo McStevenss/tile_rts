@@ -1,0 +1,40 @@
+import heapq
+
+def astar(map, start, goal, additional_obstacles = None):
+    frontier = []
+    heapq.heappush(frontier, (0, start))
+    came_from = {start: None}
+    cost_so_far = {start: 0}
+
+    while frontier:
+        _, current = heapq.heappop(frontier)
+        if current == goal:
+            break
+
+        x, y = current
+        # for dx, dy in ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1)):
+        for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+            nx, ny = x + dx, y + dy
+            if not map.is_valid_position(nx, ny): continue
+
+            if additional_obstacles is not None:
+                if (x,y) in additional_obstacles.keys():
+                    continue
+            # if not map.tiles[nx][ny].walkable: continue
+
+            new_cost = cost_so_far[current] + 1
+            neighbor = (nx, ny)
+            if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                cost_so_far[neighbor] = new_cost
+                priority = new_cost + abs(goal[0]-nx) + abs(goal[1]-ny)
+                heapq.heappush(frontier, (priority, neighbor))
+                came_from[neighbor] = current
+
+    # reconstruct path
+    path = []
+    cur = goal
+    while cur and cur != start:
+        path.append(cur)
+        cur = came_from.get(cur)
+    path.reverse()
+    return path
