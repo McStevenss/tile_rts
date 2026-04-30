@@ -2,26 +2,17 @@ from units import *
 from config import *
 import random 
 from camera import Camera
+from texture_loader import TextureLoader
+
 
 class UnitHandler:
     def __init__(self, engine):
         self.engine = engine
-
-        # self.units = {} #(x,y) : unit
         self.units = [] #(x, y ,unit)
+        self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Soldier.png",spritesheet_tilesize=10)
 
-
-    # def add_unit(self,unit: Unit):
-    #     unit_pos = (int(unit.x),int(unit.y))
-
-    #     if unit_pos in self.units.keys():
-    #         self.engine.event_handler.post_event("Error",[f"[UnitHandler:add_unit] Unit already exists on {int(unit.x)},{int(unit.y)}"])
-    #         return
-        
-    #     self.units[(int(unit.x),int(unit.y))] = unit
 
     def add_unit(self,unit: Unit):
-        # unit_pos = (int(unit.x),int(unit.y))
         ux,uy = (int(unit.x),int(unit.y))
 
         for x,y,unit in self.units:

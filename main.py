@@ -27,18 +27,17 @@ class Engine:
         self.tile_atlas = TILE_ATLAS
 
         self.texture_loader = TextureLoader(engine=self,spritesheet_path="textures/tilesheet.png",spritesheet_tilesize=8)
-        self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
         self.map = Map(self,texture_loader=self.texture_loader, width=MAP_SIZE[0],height=MAP_SIZE[1])
         self.camera = Camera(view_size=(32,32))
         self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
 
-        self.test_unit = Unit(self,"grunt",(2,2))
         # #Local controller
         # self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
 
+        self.test_unit = Unit(self,"grunt",(2,2))
         self.unit_handler.add_unit(self.test_unit)
 
         self.camera_pan_speed = 12

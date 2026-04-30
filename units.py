@@ -53,7 +53,7 @@ class Animator():
 class Unit:
     def __init__(self, engine, texture_key="grunt", pos=(0,0)):
         self.engine = engine
-        self.texture_loader = self.engine.unit_texture_loader
+        self.texture_loader = self.engine.unit_handler.unit_texture_loader
         self.screen = self.engine.screen
         self.x = pos[0]
         self.y = pos[1]
