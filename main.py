@@ -89,7 +89,7 @@ class Engine:
                 return
             
 
-            path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y),int(tx),int(ty), self.entity_handler.entities)
+            path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y) ,int(tx),int(ty), self.entity_handler.entities)
             self.test_unit.path = path
 
         

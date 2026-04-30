@@ -11,15 +11,20 @@ class Animator():
 
         self.atlas = UNIT_ATLAS[animation_key]
 
-        self.current_animation = "idle"  # default
+        self.default_animation = "idle"
+        self.current_animation = self.default_animation  # default
+
         self.timer = 0.0
         self.frame = 0
+
+        self.stop_animation = False
 
     def set_animation(self, anim_name):
         if anim_name != self.current_animation:
             self.current_animation = anim_name
             self.timer = 0.0
             self.frame = 0
+            self.stop_animation = False
 
     def update(self, dt):
         start, end = self.atlas[self.current_animation]
@@ -33,13 +38,17 @@ class Animator():
         self.frame = int(self.timer / frame_duration) % frame_count
         texture_index = start + self.frame
 
+        if self.current_animation == "die" and self.frame+1 == frame_count:
+            texture_index = end
+            self.stop_animation = True
+
         texture = self.texture_loader.get_texture((texture_index, 0))
         
-        if self.current_animation == "right":
+        if "right" in self.current_animation:
             texture = pygame.transform.flip(texture,1,0)
 
-
-        self.tile.texture = texture
+        if not self.stop_animation:
+            self.tile.texture = texture
 
 class Unit:
     def __init__(self, engine, texture_key="grunt", pos=(0,0)):
@@ -83,7 +92,7 @@ class Unit:
             self.movetimer = 0
 
         if self.path == []:
-            self.animator.set_animation("idle")
+            self.animator.set_animation(self.animator.default_animation)
 
     def move(self,x,y):
 
