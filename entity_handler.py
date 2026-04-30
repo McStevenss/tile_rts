@@ -12,6 +12,14 @@ class EntityHandler:
         #Generate mines on map
         self.generate_map_resources()
 
+        self.engine.event_handler.subscribe("entity_remove",self.on_remove_entity)
+
+
+    def on_remove_entity(self,data):
+        event_type, *event_data = data
+        ex,ey = event_data
+        self.remove_entity(ex,ey)
+
     def generate_map_resources(self):
 
         for y in range(self.map_height):
@@ -39,16 +47,14 @@ class EntityHandler:
             self.engine.event_handler.post_event("Error",[f"[EntityHandler:add_entity] Entity already exists on {int(entity.x)},{int(entity.y)}"])
             return
         
-        if entity_pos[0] > 0 and entity_pos[0] < self.map_width-1:
-            
+        if entity_pos[0] > 0 and entity_pos[0] < self.map_width-1:   
             if entity_pos[1] > 0 and entity_pos[1] < self.map_height-1:
                 self.entities[(int(entity.x),int(entity.y))] = entity
-                return
+            return
         
         self.engine.event_handler.post_event("Error",[f"[EntityHandler:add_entity] Entity would be outside the map at {int(entity.x)},{int(entity.y)}"])
 
-        
-
+    
 
     def remove_entity(self, x,y):
         if (x,y) in self.entities.keys():
@@ -63,12 +69,6 @@ class EntityHandler:
     def update_entities(self, dt):
         for entity in self.entities.values():
             entity.update(dt)
-
-    # def draw_entities(self, camera: Camera = None):
-
-
-    #     for entity in self.entities.values():
-    #         entity.draw()
 
 
     def draw_entities(self, camera: Camera = None):

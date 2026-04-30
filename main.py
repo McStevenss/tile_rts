@@ -52,8 +52,9 @@ class Engine:
         self.placement_active = False
 
     def setup_screens(self, windowTitle="Tile_base"):
-        self.screen_width = 1080
-        self.screen_height = 1150
+        self.screen_width = 1920
+        # self.screen_height = 1150
+        self.screen_height = 1080
 
         self.target_size = (1080, 1080)
 
@@ -76,11 +77,13 @@ class Engine:
         event_type, *event_data = data
         mb, rx,ry,tx,ty = event_data
 
-        if mb==0:
+        if mb==0 and rx <= self.target_size[0] and ry <= self.target_size[1]:
             entity = self.entity_handler.get_entity(int(tx),int(ty))
             if entity is not None:
                 entity.is_selected = not entity.is_selected
+                entity.tick(self.dt)
                 return
+            
             
             unit = self.unit_handler.get_unit(int(tx),int(ty))
             if unit is not None:
@@ -88,8 +91,12 @@ class Engine:
                 return
             
 
-            path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y) ,int(tx),int(ty), self.entity_handler.entities)
-            self.test_unit.path = path
+            if self.map.is_valid_position(int(tx),int(ty)):
+                path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y) ,int(tx),int(ty), self.entity_handler.entities)
+                self.test_unit.path = path
+
+        else:
+            print("[!]Mouse pressed outside game window")
 
         
     def on_create_entity(self,data):

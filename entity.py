@@ -92,14 +92,38 @@ class Mine(Entity):
         super().__init__(engine, texture_key, pos)
         self.available_resources = 10
         self.type = ResourceType.IRON
+
+        self.status_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
+        self.progress_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
+        self.tick_width = self.tile.tile_size / self.available_resources
+
     
     def update(self, dt):
         super().update(dt)
 
     def tick(self,dt):
         self.available_resources -= 1
+
+        if self.progress_rect.width > 0:
+            self.progress_rect.width -= self.tick_width
+
+        if self.available_resources <= 0:
+            self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
+
+
         return self.type
 
+    def draw_at(self, tile_x, tile_y):
+        super().draw_at(tile_x, tile_y)
+
+
+        if self.progress_rect.width != self.tile.tile_size:
+            self.status_rect.x = tile_x
+            self.status_rect.y = tile_y - 4
+            self.progress_rect.x = tile_x
+            self.progress_rect.y = tile_y- 4
+            pygame.draw.rect(self.engine.screen,(255,0,0),self.status_rect) 
+            pygame.draw.rect(self.engine.screen,(0,255,0),self.progress_rect)
 
 
 
