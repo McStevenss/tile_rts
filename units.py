@@ -1,0 +1,93 @@
+from tile import Tile
+from config import *
+import pygame
+
+
+class Animator():
+    def __init__(self, animation_key, tile, unit_texture_loader, animation_speed=1.0):
+        self.animation_key = animation_key
+        self.tile = tile
+        self.texture_loader = unit_texture_loader
+        self.animation_speed = animation_speed
+
+        self.atlas = UNIT_ATLAS[animation_key]
+
+        self.current_animation = "idle"  # default
+        self.timer = 0.0
+        self.frame = 0
+
+    def set_animation(self, anim_name):
+        if anim_name != self.current_animation:
+            self.current_animation = anim_name
+            self.timer = 0.0
+            self.frame = 0
+
+    def update(self, dt):
+        start, end = self.atlas[self.current_animation]
+        frame_count = end - start + 1
+
+        # advance timer
+        self.timer += dt * self.animation_speed
+        frame_duration = 0.1
+
+        # compute current frame
+        self.frame = int(self.timer / frame_duration) % frame_count
+        texture_index = start + self.frame
+
+        texture = self.texture_loader.get_texture((texture_index, 0))
+        texture = pygame.transform.flip(texture,1,0)
+        # if 
+
+        # self.tile.texture = self.texture_loader.get_texture((texture_index, 0))
+        self.tile.texture = texture
+
+class Unit:
+    def __init__(self, engine, texture_key="grunt", pos=(0,0)):
+        self.engine = engine
+        self.texture_loader = self.engine.unit_texture_loader
+        self.screen = self.engine.screen
+        self.x = pos[0]
+        self.y = pos[1]
+        self.texture_key = texture_key
+        texture = self.texture_loader.get_texture((1,0))
+        self.tile = Tile(self.engine,texture,(self.x,self.y))
+        self.tile.tile_size = 8
+
+
+        self.is_selected = False
+        self.selected_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["default"])
+        self.selected_tile = Tile(self.engine,self.selected_texture,(self.x,self.y))
+
+        self.animator = Animator(texture_key, self.tile, self.texture_loader, animation_speed=1.0)
+
+    def update(self, dt):
+        
+        if self.tile.x != self.x:
+            self.tile.x = self.x
+            self.selected_tile.x = self.x
+        if self.tile.y != self.y:
+            self.tile.y = self.y
+            self.selected_tile.y = self.y
+
+        self.animator.update(dt)
+
+    def move(self,x,y):
+        self.x = x
+        self.y = y
+
+    def tick(self,dt):
+        pass
+
+
+    def draw(self):
+        self.tile.draw()
+
+        if self.is_selected:
+            self.selected_tile.draw()
+
+
+    def draw_at(self, screen_x, screen_y):
+        self.tile.draw_at(screen_x, screen_y)
+
+        if self.is_selected:
+            self.selected_tile.draw_at(screen_x, screen_y)

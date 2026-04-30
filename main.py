@@ -1,0 +1,198 @@
+import pygame
+from texture_loader import TextureLoader
+from map import Map
+from player import Player
+from config import *
+from entity import Building
+from mouse import GameMouse
+from events import EventHandler
+from entity_handler import EntityHandler
+from units import Unit
+from unit_handler import UnitHandler
+from camera import Camera
+
+class Engine:
+    def __init__(self):
+        self.screen_width = 1080
+        self.screen_height = 1150
+        self.size = (self.screen_width, self.screen_height)
+        self.display_screen = pygame.display.set_mode(self.size) 
+
+        self.target_size = (1080, 1080)
+
+        self.game_screen_width = 256
+        self.game_screen_height = 256
+
+        # self.game_screen_width = 24*8
+        # self.game_screen_height = 24*8
+
+        self.screen_ratio_x = self.game_screen_width/self.target_size[0]
+        self.screen_ratio_y = self.game_screen_height/self.target_size[1]
+
+        # self.screen_ratio_x = self.game_screen_width/self.screen_width
+        # self.screen_ratio_y = self.game_screen_height/self.screen_height
+
+        self.screen = pygame.Surface((self.game_screen_width,self.game_screen_height)) 
+
+        self.display_ratio = (self.screen_width/self.game_screen_width, self.screen_height/self.game_screen_height)
+        self.tick_rate = 60
+        pygame.display.set_caption("Tile_base")
+        self.done = False 
+        self.clock = pygame.time.Clock()
+        self.event_handler = EventHandler()
+        self.tile_atlas = TILE_ATLAS
+
+        self.event_handler.subscribe("create_entity",self.on_create_entity)
+        self.event_handler.subscribe("m_released",self.on_mouse_pressed)
+        self.texture_loader = TextureLoader(engine=self,spritesheet_path="textures/tilesheet.png",spritesheet_tilesize=8)
+        self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
+
+        self.test_unit = Unit(self,"grunt",(2,2))
+        self.dt = 0 
+        #Local controller
+        self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
+        self.map = Map(self,texture_loader=self.texture_loader, width=MAP_SIZE[0],height=MAP_SIZE[1])
+
+        self.camera = Camera(view_size=(32,32))
+        self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
+
+
+
+        self.entity_handler = EntityHandler(self)
+        self.unit_handler = UnitHandler(self)
+
+        self.unit_handler.add_unit(self.test_unit)
+
+        self.camera_pan_speed = 12
+        self.pan_interval = 1.0 / self.camera_pan_speed  # 0.5s
+        self.pan_timer = 0.0
+
+
+        self.draw_debug = False
+        #mouse
+        # pygame.mouse.set_visible(0)
+        pygame.mouse.set_visible(1)
+        self.mouse = GameMouse(self)
+
+        self.placement_active = False
+
+    def on_mouse_pressed(self,data):
+        event_type, *event_data = data
+        mb, rx,ry,tx,ty = event_data
+
+        if mb==0:
+            entity = self.entity_handler.get_entity(int(tx),int(ty))
+            if entity is not None:
+                entity.is_selected = not entity.is_selected
+        
+    def on_create_entity(self,data):
+        if not self.placement_active:
+            return
+
+        event_type, *event_data = data
+        entity_tile, entity_type, rx,ry, tx, ty = event_data
+        self.entity_handler.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self,texture_key=entity_tile,pos=(tx,ty)))
+  
+
+    def handle_events(self):
+        keys = pygame.key.get_pressed()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.done = True
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_v and keys[pygame.K_v]:
+                   self.draw_debug = not self.draw_debug
+
+                if event.key == pygame.K_1 and keys[pygame.K_1]:
+                   self.placement_active = not self.placement_active
+
+                # if event.key == pygame.K_LEFT and keys[pygame.K_LEFT]:
+                #     self.event_handler.post_event(
+                #     "arrows_pressed", ("left",(-1,0))
+                # )
+                
+                # if event.key == pygame.K_RIGHT and keys[pygame.K_RIGHT]:
+                #     self.event_handler.post_event(
+                #     "arrows_pressed", ("right",(1,0))
+                # )
+                    
+                # if event.key == pygame.K_UP and keys[pygame.K_UP]:
+                #     self.event_handler.post_event(
+                #     "arrows_pressed", ("up",(0,-1))
+                # )
+                
+                # if event.key == pygame.K_DOWN and keys[pygame.K_DOWN]:
+                #     self.event_handler.post_event(
+                #     "arrows_pressed", ("down",(0,1))
+                # )
+
+
+        self.handle_input(keys)
+        self.kpressed = keys
+        
+    def handle_input(self, keys):
+        
+        if keys[pygame.K_ESCAPE]:
+            self.done = True
+
+        if keys[pygame.K_DOWN] and self.pan_timer >= self.pan_interval:
+            self.event_handler.post_event(
+                "arrows_pressed", ("down",(0,1)))
+            
+        if keys[pygame.K_UP] and self.pan_timer >= self.pan_interval:
+                    self.event_handler.post_event(
+                    "arrows_pressed", ("up",(0,-1)))
+        
+        if keys[pygame.K_RIGHT] and self.pan_timer >= self.pan_interval:
+                    self.event_handler.post_event(
+                    "arrows_pressed", ("right",(1,0)))
+        if keys[pygame.K_LEFT] and self.pan_timer >= self.pan_interval:
+                    self.event_handler.post_event(
+                    "arrows_pressed", ("left",(-1,0)))
+                
+      
+     
+    def run(self):
+        while not self.done:
+            self.screen.fill((0,0,0))
+
+
+            self.pan_timer += self.dt
+
+            # --- Main event loop
+            self.handle_events()
+            #Update objects
+            #self.texture_loader.update()
+            self.map.update()
+            self.mouse.update()
+            self.entity_handler.update_entities(self.dt)
+            # [entity.update(dt=self.dt) for entity in self.entities]
+
+            self.unit_handler.update_units(self.dt)
+            #Draw objects
+            # self.map.draw(self.entities)
+            self.map.draw(self.camera)
+            self.entity_handler.draw_entities(self.camera)
+            self.unit_handler.draw_units(self.camera)
+            self.mouse.draw()
+            scaled = pygame.transform.scale(self.screen, self.target_size)
+            self.display_screen.blit(scaled,(0,0))
+            pygame.display.flip()
+            # self.clock.tick(self.tick_rate)
+            tick = self.clock.tick(self.tick_rate)
+            self.dt = tick/1000
+
+            if self.pan_timer >= self.pan_interval:
+                self.pan_timer = 0
+
+ 
+        # Close the window and quit.
+        print("Goodbye!")
+        pygame.quit()
+
+
+if __name__ == "__main__":
+    game = Engine()
+    game.run()
