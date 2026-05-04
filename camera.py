@@ -16,7 +16,14 @@ class Camera:
     def _apply_direction(self, direction):
         x_dir = self.offset[0] + direction[0]
         y_dir = self.offset[1] + direction[1]
+        
+        if x_dir >= 0 and x_dir+self.view_size[0] <= MAP_SIZE[0]:
+            y_offset = self.offset[1]
+            self.offset = (x_dir,y_offset)
 
-        if x_dir >= 0 and y_dir >= 0:
-            self.offset = (x_dir,y_dir)
+        if y_dir >= 0 and y_dir+self.view_size[1] <= MAP_SIZE[1]:
+            x_offset = self.offset[0]
+            self.offset = (x_offset,y_dir)
+            
+        
 

@@ -15,7 +15,7 @@ class Engine:
     def __init__(self):
         self.setup_screens("RTS Game")
 
-        self.tick_rate = 60
+        self.tick_rate = 100
         self.dt = 0 
         self.clock = pygame.time.Clock()
   
@@ -28,7 +28,7 @@ class Engine:
 
         self.texture_loader = TextureLoader(engine=self,spritesheet_path="textures/tilesheet.png",spritesheet_tilesize=8)
         self.map = Map(self,texture_loader=self.texture_loader, width=MAP_SIZE[0],height=MAP_SIZE[1])
-        self.camera = Camera(view_size=(32,32))
+        self.camera = Camera(view_size=(42,32))
         self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
 
         # #Local controller
@@ -56,9 +56,11 @@ class Engine:
         # self.screen_height = 1150
         self.screen_height = 1080
 
-        self.target_size = (1080, 1080)
+        # self.target_size = (1080, 1080)
+        self.target_size = (1440, 1080)
 
-        self.game_screen_width = 256
+        # self.game_screen_width = 256
+        self.game_screen_width = 336#256
         self.game_screen_height = 256
 
         #Setup main display and game display
@@ -149,7 +151,8 @@ class Engine:
      
     def run(self):
         while not self.done:
-            self.screen.fill((0,0,0))
+            # self.screen.fill((0,0,0))
+            self.screen.fill((0,255,0))
 
 
             self.pan_timer += self.dt
@@ -180,7 +183,7 @@ class Engine:
             if self.pan_timer >= self.pan_interval:
                 self.pan_timer = 0
 
- 
+
         # Close the window and quit.
         print("Goodbye!")
         pygame.quit()
