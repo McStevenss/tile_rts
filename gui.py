@@ -29,8 +29,8 @@ class GUI:
         self.buttons = []
 
 
-        self.add_text("Selected entity", (0,0))
-        self.add_button("Reset Entities", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.add_text("Selected entities:", (0,0))
+        self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
         self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
 
 

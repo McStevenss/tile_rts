@@ -41,11 +41,7 @@ class Engine:
         self.gui = GUI(self,self.gui_size,self.gui_offset)
         self.event_handler.subscribe("entity_selected",self.gui.on_selected_entity)
         self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
-        self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
         self.event_handler.subscribe("gui_pressed",self.gui.on_gui_pressed)
-        
-        # #Local controller
-        # self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
@@ -53,7 +49,7 @@ class Engine:
         self.test_unit = Unit(self,"grunt",(2,2))
         self.unit_handler.add_unit(self.test_unit)
 
-        self.camera_pan_speed = 12
+        self.camera_pan_speed = 16
         self.pan_interval = 1.0 / self.camera_pan_speed  # 0.5s
         self.pan_timer = 0.0
 
@@ -66,10 +62,8 @@ class Engine:
 
     def setup_screens(self, windowTitle="Tile_base"):
         self.screen_width = 1920
-        # self.screen_height = 1150
         self.screen_height = 1080
 
-        # self.target_size = (1080, 1080)
         self.target_size = (1440, 1080)
 
         # self.game_screen_width = 256
@@ -107,14 +101,23 @@ class Engine:
             unit = self.unit_handler.get_unit(int(tx),int(ty))
             if unit is not None:
                 unit.is_selected = not unit.is_selected
-                self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
 
+                if unit.is_selected:
+                    self.unit_handler.selected_units.append(unit)
+                elif not unit.is_selected:
+                    self.unit_handler.selected_units.remove(unit)
+                
+                print(unit.is_selected, self.unit_handler.selected_units)
+                self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
+                
                 return
             
 
+        if mb==2 and rx <= self.target_size[0] and ry <= self.target_size[1]:
             if self.map.is_valid_position(int(tx),int(ty)):
-                path =self.map.find_path(int(self.test_unit.x),int(self.test_unit.y) ,int(tx),int(ty), self.entity_handler.entities)
-                self.test_unit.path = path
+                for unit in self.unit_handler.selected_units:                    
+                    path =self.map.find_path(int(unit.x),int(unit.y) ,int(tx),int(ty), self.entity_handler.entities)
+                    unit.path = path
 
         else:
             self.event_handler.post_event("gui_pressed",data)

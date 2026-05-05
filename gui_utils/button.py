@@ -13,7 +13,7 @@ class Button:
         self.rect = pygame.rect.Rect(self.x,self.y,self.w,self.h)
         self.event_handler = event_handler
 
-        self.font_small = pygame.font.Font('freesansbold.ttf', 12)
+        self.font_small = pygame.font.Font('freesansbold.ttf', 14)
         self.rendered_text = self.font_small.render(text, True, (255,255,255))
         self.textRect = self.rendered_text.get_rect()
 

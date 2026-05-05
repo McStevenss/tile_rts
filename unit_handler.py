@@ -10,6 +10,12 @@ class UnitHandler:
         self.engine = engine
         self.units = [] #(x, y ,unit)
         self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
+        self.selected_units = []
+        self.engine.event_handler.subscribe("reset_entity_selection",self.__reset_selection)
+
+
+    def __reset_selection(self,data):
+        self.selected_units = []
 
 
     def add_unit(self,unit: Unit):

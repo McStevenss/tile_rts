@@ -6,6 +6,8 @@ def astar(map, start, goal, additional_obstacles = None):
     came_from = {start: None}
     cost_so_far = {start: 0}
 
+    if goal in additional_obstacles.keys():
+        return []
     while frontier:
         _, current = heapq.heappop(frontier)
         if current == goal:

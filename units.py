@@ -55,19 +55,26 @@ class Unit:
         self.engine = engine
         self.texture_loader = self.engine.unit_handler.unit_texture_loader
         self.screen = self.engine.screen
+        
+        
+        #Unit defaults
         self.x = pos[0]
         self.y = pos[1]
+        self.health = 15
+
+        #Texture and Tiles
         self.texture_key = texture_key
         texture = self.texture_loader.get_texture((1,0))
         self.tile = Tile(self.engine,texture,(self.x,self.y))
         self.tile.tile_size = 8
-
 
         self.is_selected = False
         self.selected_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["default"])
         self.selected_tile = Tile(self.engine,self.selected_texture,(self.x,self.y))
         self.animator = Animator(texture_key, self.tile, self.texture_loader, animation_speed=1.0)
 
+
+        #Pathing and speed
         self.path = []
         self.movespeed = 2 #tiles per second
         self.movetimer = 0
