@@ -198,10 +198,10 @@ class Engine:
             self.unit_handler.update_units(self.dt)
             self.gui.update()
             #Draw objects
-            # self.map.draw(self.entities)
+
             self.map.draw(self.camera)
-            self.entity_handler.draw_entities(self.camera)
             self.unit_handler.draw_units(self.camera)
+            self.entity_handler.draw_entities(self.camera)
             self.mouse.draw()
             scaled = pygame.transform.scale(self.screen, self.target_size)
             self.display_screen.blit(scaled,(0,0))
@@ -209,7 +209,6 @@ class Engine:
 
 
             pygame.display.flip()
-            # self.clock.tick(self.tick_rate)
             tick = self.clock.tick(self.tick_rate)
             self.dt = tick/1000
 
