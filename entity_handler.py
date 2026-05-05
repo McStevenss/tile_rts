@@ -65,6 +65,15 @@ class EntityHandler:
             return self.entities[(x,y)]
         
         return None
+    
+    def get_entity_in_area(self,start_x,start_y,end_x,end_y):
+        entities_in_area = []
+        for x,y in self.entities.keys():
+            if start_x <= x <=end_x:
+                if start_y <= y <=end_y:
+                    entities_in_area.append(self.entities[(x,y)])
+
+        return entities_in_area
 
     def update_entities(self, dt):
         for entity in self.entities.values():

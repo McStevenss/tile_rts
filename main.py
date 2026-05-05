@@ -27,6 +27,7 @@ class Engine:
         self.clock = pygame.time.Clock()
   
         self.done = False 
+        self.placement_active = False
         
         self.event_handler = EventHandler()
         self.event_handler.subscribe("create_entity",self.on_create_entity)
@@ -42,6 +43,7 @@ class Engine:
         self.event_handler.subscribe("entity_selected",self.gui.on_selected_entity)
         self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
         self.event_handler.subscribe("gui_pressed",self.gui.on_gui_pressed)
+        self.event_handler.subscribe("m_drag",self.on_mouse_dragged)
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
@@ -58,7 +60,6 @@ class Engine:
         pygame.mouse.set_visible(1)
         self.mouse = GameMouse(self)
 
-        self.placement_active = False
 
     def setup_screens(self, windowTitle="Tile_base"):
         self.screen_width = 1920
@@ -107,7 +108,6 @@ class Engine:
                 elif not unit.is_selected:
                     self.unit_handler.selected_units.remove(unit)
                 
-                print(unit.is_selected, self.unit_handler.selected_units)
                 self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
                 
                 return
@@ -119,18 +119,27 @@ class Engine:
                     path =self.map.find_path(int(unit.x),int(unit.y) ,int(tx),int(ty), self.entity_handler.entities)
                     unit.path = path
 
-        else:
+
+        if rx >= self.gui_offset[0]:
             self.event_handler.post_event("gui_pressed",data)
 
+    def on_mouse_dragged(self,data):
+        event_type, *event_data = data
+        sx,sy,ex,ey = event_data
+        print("mouse drag", sx,sy,ex,ey)
+        entities = self.entity_handler.get_entity_in_area(sx,sy,ex,ey)
+
+        for entity in entities:
+            entity.is_selected = True
+            self.event_handler.post_event("entity_selected", (entity.is_selected,entity))
 
         
     def on_create_entity(self,data):
-        if not self.placement_active:
-            return
-
         event_type, *event_data = data
         entity_tile, entity_type, rx,ry, tx, ty = event_data
-        self.entity_handler.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self,texture_key=entity_tile,pos=(tx,ty)))
+
+        if rx <= self.target_size[0] and ry <= self.target_size[1]:
+            self.entity_handler.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self,texture_key=entity_tile,pos=(tx,ty)))
   
 
     def handle_events(self):

@@ -150,6 +150,9 @@ class Tree(Entity):
 
     def tick(self,dt):
         self.available_resources -= 1
+
+        if self.available_resources <= 0:
+            self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
         return self.type
 
 
