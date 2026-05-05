@@ -16,10 +16,10 @@ class EventHandler:
     
             # self.log((event_type,*data))
 
-        else:
-            self.subscribers[event_type] = []
-            self.subscribe(event_type,self.log)
-            self.log((event_type,*data))
+        # else:
+        #     self.subscribers[event_type] = []
+        #     self.subscribe(event_type,self.log)
+        #     self.log((event_type,*data))
 
     def log(self,data):
         event_type, *data = data

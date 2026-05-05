@@ -21,6 +21,12 @@ class Entity:
         self.selected_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["default"])
         self.selected_tile = Tile(self.engine,self.selected_texture,(self.x,self.y))
 
+        self.engine.event_handler.subscribe("reset_entity_selection",self.__reset_selection)
+
+
+    def __reset_selection(self,data):
+        self.is_selected = False
+
     def update(self, dt):
         
         if self.tile.x != self.x:

@@ -47,8 +47,6 @@ class Map:
                 else:
                     map[y].append((1,1,1))
 
-
-        print(len(map))
         return map                
 
     def is_valid_position(self,target_x,target_y):

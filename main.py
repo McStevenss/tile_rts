@@ -10,10 +10,17 @@ from entity_handler import EntityHandler
 from units import Unit
 from unit_handler import UnitHandler
 from camera import Camera
+from gui import GUI
+
+#POST EVENT EXAMPLE
+#event_handler.post_event("create_entity", ("orc_village", "building", self.x,self.y,  self.tile.x + camera_offset_x, self.tile.y + camera_offset_y))
+
+
 
 class Engine:
     def __init__(self):
         self.setup_screens("RTS Game")
+        pygame.init()
 
         self.tick_rate = 100
         self.dt = 0 
@@ -31,6 +38,12 @@ class Engine:
         self.camera = Camera(view_size=(42,32))
         self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
 
+        self.gui = GUI(self,self.gui_size,self.gui_offset)
+        self.event_handler.subscribe("entity_selected",self.gui.on_selected_entity)
+        self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
+        self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
+        self.event_handler.subscribe("gui_pressed",self.gui.on_gui_pressed)
+        
         # #Local controller
         # self.player = Player(self,texture_key=(2,1),pos=(17*16,17*16))
 
@@ -73,6 +86,9 @@ class Engine:
         self.screen_ratio_y = self.game_screen_height/self.target_size[1]
         self.display_ratio = (self.screen_width/self.game_screen_width, self.screen_height/self.game_screen_height)
 
+        self.gui_size = (self.screen_width-self.target_size[0], self.screen_height)
+        self.gui_offset = (self.target_size[0],0)
+
         pygame.display.set_caption(windowTitle)
 
     def on_mouse_pressed(self,data):
@@ -84,12 +100,15 @@ class Engine:
             if entity is not None:
                 entity.is_selected = not entity.is_selected
                 entity.tick(self.dt)
+                self.event_handler.post_event("entity_selected", (entity.is_selected,entity))
                 return
             
             
             unit = self.unit_handler.get_unit(int(tx),int(ty))
             if unit is not None:
                 unit.is_selected = not unit.is_selected
+                self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
+
                 return
             
 
@@ -98,7 +117,8 @@ class Engine:
                 self.test_unit.path = path
 
         else:
-            print("[!]Mouse pressed outside game window")
+            self.event_handler.post_event("gui_pressed",data)
+
 
         
     def on_create_entity(self,data):
@@ -160,13 +180,11 @@ class Engine:
             # --- Main event loop
             self.handle_events()
             #Update objects
-            #self.texture_loader.update()
             self.map.update()
             self.mouse.update()
             self.entity_handler.update_entities(self.dt)
-            # [entity.update(dt=self.dt) for entity in self.entities]
-
             self.unit_handler.update_units(self.dt)
+            self.gui.update()
             #Draw objects
             # self.map.draw(self.entities)
             self.map.draw(self.camera)
@@ -175,6 +193,9 @@ class Engine:
             self.mouse.draw()
             scaled = pygame.transform.scale(self.screen, self.target_size)
             self.display_screen.blit(scaled,(0,0))
+            self.gui.draw()
+
+
             pygame.display.flip()
             # self.clock.tick(self.tick_rate)
             tick = self.clock.tick(self.tick_rate)
@@ -183,7 +204,8 @@ class Engine:
             if self.pan_timer >= self.pan_interval:
                 self.pan_timer = 0
 
-
+            
+            pygame.display.set_caption(f"RTS TEST - FPS:{round(self.clock.get_fps(),2)}")
         # Close the window and quit.
         print("Goodbye!")
         pygame.quit()

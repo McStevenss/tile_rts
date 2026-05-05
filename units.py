@@ -73,6 +73,12 @@ class Unit:
         self.movetimer = 0
         self.move_interval = 1/self.movespeed
 
+        self.engine.event_handler.subscribe("reset_entity_selection",self.__reset_selection)
+
+
+    def __reset_selection(self,data):
+        self.is_selected = False
+
     def update(self, dt):
         
         if self.tile.x != self.x:
@@ -104,7 +110,6 @@ class Unit:
             self.animator.set_animation("up")
         elif self.y < y:
             self.animator.set_animation("down")
-
 
 
         self.x = x

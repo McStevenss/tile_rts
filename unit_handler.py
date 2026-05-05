@@ -9,7 +9,7 @@ class UnitHandler:
     def __init__(self, engine):
         self.engine = engine
         self.units = [] #(x, y ,unit)
-        self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Soldier.png",spritesheet_tilesize=10)
+        self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
 
 
     def add_unit(self,unit: Unit):

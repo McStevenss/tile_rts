@@ -1,0 +1,125 @@
+import pygame
+from gui_utils.button import Button
+
+
+RED = (255,0,0)
+GREEN = (0,255,0)
+BLUE = (0,0,255)
+WHITE = (255,255,255)
+BLACK = (0,0,0)
+
+class GUI:
+    def __init__(self, engine, size, offset=(0,0)):
+        self.engine = engine
+        self.display_screen = self.engine.display_screen
+        self.width = size[0]
+        self.height = size[1]
+        self.offset = offset
+
+        self.screen = pygame.Surface((self.width,self.height)) 
+        # self.screen.fill((255,0,0))
+
+        self.font = pygame.font.Font('freesansbold.ttf', 32)
+        self.font_small = pygame.font.Font('freesansbold.ttf', 12)
+
+        self.row_height = 32
+        self.texts = []
+        self.render_packages = []
+        self.selected_entities = []
+        self.buttons = []
+
+
+        self.add_text("Selected entity", (0,0))
+        self.add_button("Reset Entities", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
+
+
+    def update(self):
+        self.render_packages = []
+        for entity in self.selected_entities:
+            self.show_selected_entity_info(entity)
+
+    def get_text_renderable(self,text,coords):
+        rendered_text = self.font.render(text, True, (255,255,255))
+        textRect = rendered_text.get_rect()
+
+        textRect.left = coords[0]
+        textRect.top = coords[1]
+        
+        #Small padding
+        if textRect.left == 0:
+            textRect.left += 10
+
+        return rendered_text, textRect
+
+    def add_text(self,text,coords):
+        rendered_text, textRect = self.get_text_renderable(text,coords)
+        self.texts.append((rendered_text,textRect))
+
+    def add_button(self,button_text, event_call, size):
+        new_button = Button(button_text,size,self.engine.event_handler,event_call)
+        self.buttons.append(new_button)
+
+    def on_selected_entity(self,data):
+        event_type, *event_data = data
+        is_selected,entity = event_data
+
+        if is_selected and entity not in self.selected_entities:
+            self.selected_entities.append(entity)
+
+        if not is_selected and entity in self.selected_entities:
+            self.selected_entities.remove(entity)
+
+    def on_gui_pressed(self,data):
+        event_type, *event_data = data
+        _, mb,rx,ry,tx,ty = event_data
+
+        gx,gy = rx-self.offset[0],ry
+
+        for button in self.buttons:
+            if button.did_click(gx,gy):
+                button.click()
+
+    def show_selected_entity_info(self,entity):
+        package = []
+
+        # x_text,x_textRect = self.get_text_renderable(f"X: {entity.x}",(64,1+len(self.render_packages)))
+        package.append(self.get_text_renderable(f"X: {entity.x}",(64,1+len(self.render_packages))))
+        package.append(self.get_text_renderable(f"Y: {entity.y}",(155,1+len(self.render_packages))))
+
+        if hasattr(entity, "available_resources"):
+            package.append(self.get_text_renderable(f"Res: {entity.available_resources}",(250,1+len(self.render_packages))))
+
+
+        texture_scaled = pygame.transform.scale(entity.tile.texture, (32,32))
+        texture_coords = (0,1+len(self.render_packages))
+
+        if texture_coords[0] == 0:
+            texture_coords = (10,texture_coords[1])
+        
+        package.append((texture_scaled,texture_coords))
+
+        # package = [(x_text,x_textRect), (y_text,y_textRect), (texture_scaled,texture_coords)]
+        self.render_packages.append(package)
+
+    def reset_selected(self,data):
+        self.selected_entities = []
+
+    def draw(self):
+
+        self.screen.fill((0,0,0))
+
+        for button in self.buttons:
+            button.draw(self.screen)
+
+        for text,rect in self.texts:
+            self.screen.blit(text,rect)
+
+        for package in self.render_packages:
+            for renderable,coord in package:
+                coord = (coord[0],coord[1]*self.row_height)
+                self.screen.blit(renderable,coord)
+
+
+        
+        self.display_screen.blit(self.screen,self.offset)
