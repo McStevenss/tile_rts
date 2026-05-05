@@ -33,9 +33,8 @@ UNIT_ATLAS = {
 }
 
 
-ENTITY_CONFIG = {
-    "building": Building
-}
+ENTITY_CONFIG = {"building": Building}
 
 MAP_SIZE = (64,64)
+DIAGONAL_PATHING = True
 

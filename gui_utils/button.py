@@ -3,12 +3,14 @@ import pygame
 
 
 class Button:
-    def __init__(self, text, size, event_handler, on_pressed_event="button_clicked"):
+    def __init__(self, text, size, event_handler, on_pressed_event="button_clicked", is_toggle=False):
         self.x = size[0]
         self.y = size[1]
         self.w = size[2]
         self.h = size[3]
         self.text = text
+        self.is_toggle = is_toggle
+        self.toggled = False
         self.on_pressed_event = on_pressed_event
         self.rect = pygame.rect.Rect(self.x,self.y,self.w,self.h)
         self.event_handler = event_handler
@@ -26,11 +28,20 @@ class Button:
     
     def click(self):
         self.event_handler.post_event(self.on_pressed_event, ("clicked", self.x+(self.w//2),self.y+(self.h//2)))
-
+        self.toggled = not self.toggled
 
 
     def draw(self,screen):
-        pygame.draw.rect(screen,(0,0,128),self.rect)
+
+        if self.is_toggle:
+            color = (255,0,0)
+            if self.toggled:
+                color = (0,255,0)
+            pygame.draw.rect(screen,color,self.rect)
+        else:
+            pygame.draw.rect(screen,(0,0,128),self.rect)
+        
+        
         screen.blit(self.rendered_text,self.textRect)
 
 

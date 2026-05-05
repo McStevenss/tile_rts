@@ -28,22 +28,18 @@ class Engine:
   
         self.done = False 
         self.placement_active = False
-        
+        self.debug = False
         self.event_handler = EventHandler()
-        self.event_handler.subscribe("create_entity",self.on_create_entity)
-        self.event_handler.subscribe("m_released",self.on_mouse_pressed)
         self.tile_atlas = TILE_ATLAS
 
         self.texture_loader = TextureLoader(engine=self,spritesheet_path="textures/tilesheet.png",spritesheet_tilesize=8)
         self.map = Map(self,texture_loader=self.texture_loader, width=MAP_SIZE[0],height=MAP_SIZE[1])
         self.camera = Camera(view_size=(42,32))
-        self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
 
         self.gui = GUI(self,self.gui_size,self.gui_offset)
-        self.event_handler.subscribe("entity_selected",self.gui.on_selected_entity)
-        self.event_handler.subscribe("unit_selected",self.gui.on_selected_entity)
-        self.event_handler.subscribe("gui_pressed",self.gui.on_gui_pressed)
-        self.event_handler.subscribe("m_drag",self.on_mouse_dragged)
+        self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
+        self.event_handler.subscribe("m_released",self.on_mouse_pressed)
+        self.event_handler.subscribe("toggle_debug",self.on_debug)
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
@@ -77,14 +73,17 @@ class Engine:
         self.screen = pygame.Surface((self.game_screen_width,self.game_screen_height)) 
 
         #Calculate game vs screen ratio
-        self.screen_ratio_x = self.game_screen_width/self.target_size[0]
-        self.screen_ratio_y = self.game_screen_height/self.target_size[1]
+
         self.display_ratio = (self.screen_width/self.game_screen_width, self.screen_height/self.game_screen_height)
 
         self.gui_size = (self.screen_width-self.target_size[0], self.screen_height)
         self.gui_offset = (self.target_size[0],0)
 
         pygame.display.set_caption(windowTitle)
+
+    def on_debug(self,data):
+        self.debug = not self.debug
+        print("[DEBUG MODE]:",self.debug)
 
     def on_mouse_pressed(self,data):
         event_type, *event_data = data
@@ -123,25 +122,6 @@ class Engine:
         if rx >= self.gui_offset[0]:
             self.event_handler.post_event("gui_pressed",data)
 
-    def on_mouse_dragged(self,data):
-        event_type, *event_data = data
-        sx,sy,ex,ey = event_data
-        print("mouse drag", sx,sy,ex,ey)
-        entities = self.entity_handler.get_entity_in_area(sx,sy,ex,ey)
-
-        for entity in entities:
-            entity.is_selected = True
-            self.event_handler.post_event("entity_selected", (entity.is_selected,entity))
-
-        
-    def on_create_entity(self,data):
-        event_type, *event_data = data
-        entity_tile, entity_type, rx,ry, tx, ty = event_data
-
-        if rx <= self.target_size[0] and ry <= self.target_size[1]:
-            self.entity_handler.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self,texture_key=entity_tile,pos=(tx,ty)))
-  
-
     def handle_events(self):
         keys = pygame.key.get_pressed()
         
@@ -165,19 +145,16 @@ class Engine:
             self.done = True
 
         if keys[pygame.K_DOWN] and self.pan_timer >= self.pan_interval:
-            self.event_handler.post_event(
-                "arrows_pressed", ("down",(0,1)))
-            
+            self.event_handler.post_event("arrows_pressed", ("down",(0,1)))
+
         if keys[pygame.K_UP] and self.pan_timer >= self.pan_interval:
-                    self.event_handler.post_event(
-                    "arrows_pressed", ("up",(0,-1)))
-        
+            self.event_handler.post_event("arrows_pressed", ("up",(0,-1)))
+
         if keys[pygame.K_RIGHT] and self.pan_timer >= self.pan_interval:
-                    self.event_handler.post_event(
-                    "arrows_pressed", ("right",(1,0)))
+            self.event_handler.post_event("arrows_pressed", ("right",(1,0)))
+
         if keys[pygame.K_LEFT] and self.pan_timer >= self.pan_interval:
-                    self.event_handler.post_event(
-                    "arrows_pressed", ("left",(-1,0)))
+            self.event_handler.post_event("arrows_pressed", ("left",(-1,0)))
                 
       
      
@@ -185,7 +162,6 @@ class Engine:
         while not self.done:
             # self.screen.fill((0,0,0))
             self.screen.fill((0,255,0))
-
 
             self.pan_timer += self.dt
 

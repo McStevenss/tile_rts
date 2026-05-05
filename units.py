@@ -125,7 +125,6 @@ class Unit:
     def tick(self,dt):
         pass
 
-
     def draw(self):
         self.tile.draw()
 
@@ -133,7 +132,7 @@ class Unit:
             self.selected_tile.draw()
 
 
-    def draw_at(self, screen_x, screen_y):
+    def draw_at(self, screen_x, screen_y, off_x=None,off_y=None):
         #grunt tiles are 9x10
         tile_offset_y = 2
         tile_offset_x = 1
@@ -141,3 +140,9 @@ class Unit:
 
         if self.is_selected:
             self.selected_tile.draw_at(screen_x, screen_y)
+
+        if self.engine.debug and off_x is not None and off_y is not None:
+            for px,py in self.path:
+                path_screen_x = (px - off_x) * self.tile.tile_size
+                path_screen_y = (py - off_y) * self.tile.tile_size
+                self.selected_tile.draw_at(path_screen_x, path_screen_y)

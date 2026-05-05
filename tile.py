@@ -1,5 +1,4 @@
 import pygame
-import random
 
 class Tile:
     def __init__(self, engine, texture, pos=(0,0), background=False):

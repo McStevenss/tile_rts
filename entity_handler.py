@@ -13,7 +13,8 @@ class EntityHandler:
         self.generate_map_resources()
 
         self.engine.event_handler.subscribe("entity_remove",self.on_remove_entity)
-
+        self.engine.event_handler.subscribe("m_drag",self.on_mouse_dragged)
+        self.engine.event_handler.subscribe("create_entity",self.on_create_entity)
 
     def on_remove_entity(self,data):
         event_type, *event_data = data
@@ -78,6 +79,23 @@ class EntityHandler:
     def update_entities(self, dt):
         for entity in self.entities.values():
             entity.update(dt)
+
+
+    def on_mouse_dragged(self,data):
+        event_type, *event_data = data
+        sx,sy,ex,ey = event_data
+        entities = self.get_entity_in_area(sx,sy,ex,ey)
+
+        for entity in entities:
+            entity.is_selected = True
+            self.engine.event_handler.post_event("entity_selected", (entity.is_selected,entity))
+
+    def on_create_entity(self,data):
+        event_type, *event_data = data
+        entity_tile, entity_type, rx,ry, tx, ty = event_data
+
+        if rx <= self.engine.target_size[0] and ry <= self.engine.target_size[1]:
+            self.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self.engine,texture_key=entity_tile,pos=(tx,ty)))
 
 
     def draw_entities(self, camera: Camera = None):

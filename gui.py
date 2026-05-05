@@ -16,8 +16,6 @@ class GUI:
         self.height = size[1]
         self.offset = offset
 
-        print("gui dims", self.width,self.height)
-
         self.screen = pygame.Surface((self.width,self.height)) 
         # self.screen.fill((255,0,0))
 
@@ -32,13 +30,18 @@ class GUI:
         self.selected_entities = []
         self.buttons = []
 
-
-        self.add_text("Selected entities:", (0,0))
-        
-        self.placement_text_idx = self.add_text(f"Placement Active:{self.engine.placement_active}", (0,28*32))
-        
-        self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.engine.event_handler.subscribe("entity_selected",self.on_selected_entity)
+        self.engine.event_handler.subscribe("unit_selected",self.on_selected_entity)
+        self.engine.event_handler.subscribe("gui_pressed",self.on_gui_pressed)
         self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
+
+
+        ####################TEMPS######################
+        self.add_text("Selected entities:", (0,0))
+        self.placement_text_idx = self.add_text(f"Placement Active:{self.engine.placement_active}", (0,28*32))
+        self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.add_button("Toggle Debug", "toggle_debug", (40,self.height-64-128,128,64),is_toggle=True)
+        # self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
 
     def update(self):
         self.render_packages = []
@@ -75,8 +78,8 @@ class GUI:
 
         return len(self.texts)
 
-    def add_button(self,button_text, event_call, size):
-        new_button = Button(button_text,size,self.engine.event_handler,event_call)
+    def add_button(self,button_text, event_call, size, is_toggle=False):
+        new_button = Button(button_text,size,self.engine.event_handler,event_call, is_toggle)
         self.buttons.append(new_button)
 
     def on_selected_entity(self,data):

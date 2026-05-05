@@ -72,4 +72,4 @@ class UnitHandler:
             screen_x = (ux - off_x) * unit.tile.tile_size
             screen_y = (uy - off_y) * unit.tile.tile_size
 
-            unit.draw_at(screen_x, screen_y)
+            unit.draw_at(screen_x, screen_y, off_x,off_y)

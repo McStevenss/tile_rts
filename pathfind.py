@@ -1,5 +1,5 @@
 import heapq
-
+from config import DIAGONAL_PATHING
 def astar(map, start, goal, additional_obstacles = None):
     frontier = []
     heapq.heappush(frontier, (0, start))
@@ -8,14 +8,19 @@ def astar(map, start, goal, additional_obstacles = None):
 
     if goal in additional_obstacles.keys():
         return []
+    
+    if DIAGONAL_PATHING:
+        path_dirs = ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1))
+    else:
+        path_dirs = ((1,0),(-1,0),(0,1),(0,-1))
     while frontier:
         _, current = heapq.heappop(frontier)
         if current == goal:
             break
 
         x, y = current
-        # for dx, dy in ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1)):
-        for dx, dy in ((1,0),(-1,0),(0,1),(0,-1)):
+
+        for dx, dy in path_dirs:
             nx, ny = x + dx, y + dy
             if not map.is_valid_position(nx, ny): continue
 

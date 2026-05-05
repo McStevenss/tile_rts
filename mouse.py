@@ -13,15 +13,18 @@ class GameMouse:
         self.drag_start = (0,0)
         self.min_drag_distance = 1
 
+        self.screen_ratio_x = self.engine.game_screen_width/self.engine.target_size[0]
+        self.screen_ratio_y = self.engine.game_screen_height/self.engine.target_size[1]
+
     def update(self):
         self.x, self.y = pygame.mouse.get_pos()
         b_pressed = pygame.mouse.get_pressed()
 
-        self.tile.x = ((self.x) * self.engine.screen_ratio_x) // 8
-        self.tile.y = ((self.y) * self.engine.screen_ratio_y) // 8
+        self.tile.x = ((self.x) * self.screen_ratio_x) // 8
+        self.tile.y = ((self.y) * self.screen_ratio_y) // 8
 
-        self.tile.real_x = ((self.x) * self.engine.screen_ratio_x)
-        self.tile.real_y = ((self.y) * self.engine.screen_ratio_y)
+        self.tile.real_x = ((self.x) * self.screen_ratio_x)
+        self.tile.real_y = ((self.y) * self.screen_ratio_y)
 
         camera_offset_x,camera_offset_y =self.engine.camera.offset
 
@@ -30,8 +33,6 @@ class GameMouse:
             self.previous_pressed = b_pressed
 
         # Check each button (left, middle, right)
-        # print(b_pressed)
-
         for i in range(3):
             # Pressed this frame but not last frame → PRESS event
             if b_pressed[i] and not self.previous_pressed[i]:
@@ -54,24 +55,19 @@ class GameMouse:
                         )
 
                     if abs(self.drag_start[0] - (self.tile.x + camera_offset_x)) > self.min_drag_distance:
-                        print("mouse drag", abs(self.drag_start[0] - (self.tile.x+ camera_offset_x)))
+                        start_x = self.drag_start[0]
+                        end_x = self.tile.x + camera_offset_x
+                        start_y = self.drag_start[1]
+                        end_y = self.tile.y + camera_offset_y
+
                         if self.drag_start[0] > self.tile.x + camera_offset_x:
                             start_x = self.tile.x + camera_offset_x
                             end_x = self.drag_start[0]
-                        else:
-                            start_x = self.drag_start[0]
-                            end_x = self.tile.x + camera_offset_x
-
                         if self.drag_start[1] > self.tile.y + camera_offset_y:
                             start_y = self.tile.y + camera_offset_y
                             end_y = self.drag_start[1]
-                        else:
-                            start_y = self.drag_start[1]
-                            end_y = self.tile.y + camera_offset_y
 
-                        self.engine.event_handler.post_event(
-                            "m_drag", (start_x,start_y,end_x,end_y)
-                        )
+                        self.engine.event_handler.post_event("m_drag", (start_x,start_y,end_x,end_y))
 
 
                 if i == 2 and self.engine.placement_active:
