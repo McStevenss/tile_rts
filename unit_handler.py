@@ -12,6 +12,8 @@ class UnitHandler:
         self.unit_texture_loader = TextureLoader(engine=self,spritesheet_path="textures/units/Grunt.png",spritesheet_tilesize=10)
         self.selected_units = []
         self.engine.event_handler.subscribe("reset_entity_selection",self.__reset_selection)
+        self.engine.event_handler.subscribe("m_drag",self.on_mouse_dragged)
+        self.engine.event_handler.subscribe("unit_selected",self.on_unit_selected)
 
 
     def __reset_selection(self,data):
@@ -55,6 +57,35 @@ class UnitHandler:
         if to_update != []:
             for idx,x,y,unit in to_update:
                 self.units[idx] = (x,y,unit)
+
+    def get_unit_in_area(self,start_x,start_y,end_x,end_y):
+
+        units_in_area=[]
+
+        for x,y,unit in self.units:
+            if start_x <= x <= end_x:
+                if start_y <= y <= end_y:
+                    units_in_area.append(unit)
+
+        return units_in_area
+    
+    def on_mouse_dragged(self,data):
+        event_type, *event_data = data
+        sx,sy,ex,ey = event_data
+        units = self.get_unit_in_area(sx,sy,ex,ey)
+
+        for unit in units:
+            unit.is_selected = True
+            self.engine.event_handler.post_event("unit_selected", (unit.is_selected,unit))
+
+    def on_unit_selected(self,data):
+        event_type, *event_data = data
+        is_selected,unit = event_data
+
+        if unit.is_selected:
+            self.selected_units.append(unit)
+        elif not unit.is_selected:
+            self.selected_units.remove(unit)
 
 
 

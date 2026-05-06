@@ -90,9 +90,6 @@ class Building(Entity):
         pygame.draw.rect(self.engine.screen,(0,255,0),self.progress_rect)
 
 
-
-     
-
 class Mine(Entity):
     def __init__(self, engine, texture_key="mine", pos=(0, 0)):
         super().__init__(engine, texture_key, pos)

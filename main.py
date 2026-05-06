@@ -97,16 +97,9 @@ class Engine:
                 self.event_handler.post_event("entity_selected", (entity.is_selected,entity))
                 return
             
-            
             unit = self.unit_handler.get_unit(int(tx),int(ty))
             if unit is not None:
                 unit.is_selected = not unit.is_selected
-
-                if unit.is_selected:
-                    self.unit_handler.selected_units.append(unit)
-                elif not unit.is_selected:
-                    self.unit_handler.selected_units.remove(unit)
-                
                 self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
                 
                 return
