@@ -61,6 +61,7 @@ class Unit:
         self.x = pos[0]
         self.y = pos[1]
         self.health = 15
+        self.team = -1
 
         #Texture and Tiles
         self.texture_key = texture_key

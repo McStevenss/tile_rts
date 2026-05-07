@@ -45,9 +45,10 @@ class GUI:
         ####################TEMPS######################
         self.add_text("Selected entities:", (0,0))
         self.placement_text_idx = self.add_text(f"Placement Active:{self.engine.placement_active}", (0,28*32))
-        self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
-        self.add_button("Toggle Debug", "toggle_debug", (40,self.height-64-100,128,64),is_toggle=True)
-        self.add_button("Placement", "toggle_placement", (175,self.height-64-100,128,64),is_toggle=True)
+        self.add_button(self.screen, "Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.add_button(self.screen, "Toggle Debug", "toggle_debug", (40,self.height-64-100,128,64),is_toggle=True)
+        self.add_button(self.screen, "Placement", "toggle_placement", (175,self.height-64-100,128,64),is_toggle=True)
+        self.add_button(self.window, "test window", "test_pressed", (128,128,128,64),is_toggle=True)
         # self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
 
 
@@ -68,14 +69,30 @@ class GUI:
         self.texts[self.placement_text_idx-1] = (placement_text, placement_rect)
 
 
-        for entity in self.selected_entities:
-            if len(self.selected_entities) == 1:
-                self.draw_entity_submenu(entity)
+        if len(self.selected_entities) == 1:
+            self.draw_entity_submenu(self.selected_entities[0])
 
-            self.show_selected_entity_info(entity)
+        else:
+            for entity in self.selected_entities:
+                self.show_selected_entity_info(entity)
 
         if len(self.selected_entities) == 0 or len(self.selected_entities) > 1:
             self.show_window = False
+
+        if self.show_window:
+            for button in self.buttons:
+                if button.surface_owner == self.window:
+                    button.enabled = True
+                else:
+                    button.enabled = False
+        else:
+            for button in self.buttons:
+                if button.surface_owner == self.window:
+                    button.enabled = False
+                else:
+                    button.enabled = True
+
+
 
         # Wrap renderpackages in UI
         if len(self.render_packages) > self.max_selected_entities:
@@ -102,8 +119,8 @@ class GUI:
 
         return len(self.texts)
 
-    def add_button(self,button_text, event_call, size, is_toggle=False):
-        new_button = Button(button_text,size,self.engine.event_handler,event_call, is_toggle)
+    def add_button(self, surface, button_text, event_call, size, is_toggle=False):
+        new_button = Button(surface, button_text, size, self.engine.event_handler, event_call, is_toggle)
         self.buttons.append(new_button)
 
     def on_selected_entity(self,data):
@@ -121,10 +138,19 @@ class GUI:
         _, mb,rx,ry,tx,ty = event_data
 
         gx,gy = rx-self.offset[0],ry
-
+        wx,wy = rx-self.window_offset[0], ry-self.window_offset[1]
         for button in self.buttons:
-            if button.did_click(gx,gy):
-                button.click()
+            
+            if button.surface_owner == self.screen:
+                tx,ty = gx,gy
+            elif button.surface_owner == self.window:
+                tx,ty = wx,wy
+            else:
+                return
+
+            if button.enabled:
+                if button.did_click(tx,ty):
+                    button.click()
 
     def show_selected_entity_info(self,entity):
         package = []
@@ -177,7 +203,6 @@ class GUI:
             self.window.blit(text_renderable, coord)
 
 
-
         self.show_window = True
 
     def reset_selected(self,data):
@@ -188,7 +213,8 @@ class GUI:
         self.screen.fill((0,0,0))
 
         for button in self.buttons:
-            button.draw(self.screen)
+            # button.draw(self.screen)
+            button.draw(button.surface_owner)
 
         for text,rect in self.texts:
             self.screen.blit(text,rect)
