@@ -113,7 +113,8 @@ class Mine(Entity):
             self.progress_rect.width -= self.tick_width
 
         if self.available_resources <= 0:
-            self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
+            # self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
+            self.engine.event_handler.post_event("entity_remove",[self])
 
 
         return self.type

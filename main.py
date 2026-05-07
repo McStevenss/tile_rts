@@ -96,13 +96,16 @@ class Engine:
         if mb==0 and rx <= self.target_size[0] and ry <= self.target_size[1]:
             entity = self.entity_handler.get_entity(int(tx),int(ty))
             if entity is not None:
-                entity.is_selected = not entity.is_selected
+                self.event_handler.post_event("reset_entity_selection", ("Single Entity pressed",1))
                 entity.tick(self.dt)
+
+                entity.is_selected = not entity.is_selected
                 self.event_handler.post_event("entity_selected", (entity.is_selected,entity))
                 return
             
             unit = self.unit_handler.get_unit(int(tx),int(ty))
             if unit is not None:
+                self.event_handler.post_event("reset_entity_selection", ("Nothing pressed",1))
                 unit.is_selected = not unit.is_selected
                 self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
                 

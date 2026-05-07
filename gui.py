@@ -39,6 +39,7 @@ class GUI:
         self.engine.event_handler.subscribe("unit_selected",self.on_selected_entity)
         self.engine.event_handler.subscribe("gui_pressed",self.on_gui_pressed)
         self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
+        self.engine.event_handler.subscribe("entity_remove",self.on_entity_removed)
 
 
         ####################TEMPS######################
@@ -48,6 +49,17 @@ class GUI:
         self.add_button("Toggle Debug", "toggle_debug", (40,self.height-64-100,128,64),is_toggle=True)
         self.add_button("Placement", "toggle_placement", (175,self.height-64-100,128,64),is_toggle=True)
         # self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
+
+
+    #########################################################
+    # Event posted by entity to be removed, contains itself #
+    #########################################################
+    def on_entity_removed(self,data):
+        event, *event_data = data
+        entity = event_data
+
+        if entity in self.selected_entities:
+            self.selected_entities.remove(entity)
 
     def update(self):
         self.render_packages = []
@@ -62,7 +74,7 @@ class GUI:
 
             self.show_selected_entity_info(entity)
 
-        if len(self.selected_entities) == 0:
+        if len(self.selected_entities) == 0 or len(self.selected_entities) > 1:
             self.show_window = False
 
         # Wrap renderpackages in UI
@@ -156,8 +168,14 @@ class GUI:
         self.window.blit(texture_scaled, texture_coords)
 
         #Info text
-        name_render,name_rect = self.get_text_renderable(f"{entity.name}",(128,54))
-        self.window.blit(name_render,name_rect)
+        texts_to_draw = []
+        texts_to_draw.append(self.get_text_renderable(f"{entity.name}",(128,54)))
+        texts_to_draw.append(self.get_text_renderable(f"Team: {entity.team}",(128,108)))
+
+
+        for text_renderable, coord in texts_to_draw:
+            self.window.blit(text_renderable, coord)
+
 
 
         self.show_window = True

@@ -14,7 +14,7 @@ class EventHandler:
             for fn in self.subscribers[event_type]:
                 fn((event_type,*data))
     
-            # self.log((event_type,*data))
+            self.log((event_type,*data))
 
         else:
             self.subscribers[event_type] = []
