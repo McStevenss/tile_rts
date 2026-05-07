@@ -19,6 +19,7 @@ class EntityHandler:
     def on_remove_entity(self,data):
         event_type, *event_data = data
         entity = event_data[0]
+        print(entity, data)
         if (entity.x,entity.y) in self.entities.keys():
             del self.entities[(entity.x,entity.y)]
 

@@ -1,6 +1,7 @@
 from tile import Tile
 import pygame
 from enum import Enum
+import math
 
 class ResourceType(Enum):
     WOOD = 1
@@ -95,12 +96,12 @@ class Building(Entity):
 class Mine(Entity):
     def __init__(self, engine, texture_key="mine", pos=(0, 0)):
         super().__init__(engine, texture_key, pos)
-        self.available_resources = 10
+        self.available_resources = 8
         self.type = ResourceType.IRON
 
         self.status_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
         self.progress_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
-        self.tick_width = self.tile.tile_size / self.available_resources
+        self.tick_width = math.ceil(self.tile.tile_size / self.available_resources)
 
     
     def update(self, dt):
@@ -113,7 +114,6 @@ class Mine(Entity):
             self.progress_rect.width -= self.tick_width
 
         if self.available_resources <= 0:
-            # self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
             self.engine.event_handler.post_event("entity_remove",[self])
 
 
@@ -136,7 +136,7 @@ class Mine(Entity):
 class Tree(Entity):
     def __init__(self, engine, texture_key="tree_base", pos=(0, 0)):
         super().__init__(engine, texture_key, pos)
-        self.available_resources = 10
+        self.available_resources = 8
         self.type = ResourceType.WOOD
         
         self.mid_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["tree_mid"])
@@ -144,6 +144,10 @@ class Tree(Entity):
 
         self.middle_tile = Tile(self.engine,self.mid_texture,(self.x,self.y-1))
         self.top_tile = Tile(self.engine,self.top_texture,(self.x,self.y-2))
+
+        self.status_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
+        self.progress_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
+        self.tick_width = math.ceil(self.tile.tile_size / self.available_resources)
     
     def update(self, dt):
         super().update(dt)
@@ -151,8 +155,13 @@ class Tree(Entity):
     def tick(self,dt):
         self.available_resources -= 1
 
+        if self.progress_rect.width > 0:
+            self.progress_rect.width -= self.tick_width
+
         if self.available_resources <= 0:
-            self.engine.event_handler.post_event("entity_remove",[self.x,self.y])
+            self.engine.event_handler.post_event("entity_remove",[self])
+
+
         return self.type
 
 
@@ -161,6 +170,15 @@ class Tree(Entity):
 
         self.top_tile.draw_at(tile_x,tile_y - (self.tile.tile_size* 2))
         self.middle_tile.draw_at(tile_x,tile_y - (self.tile.tile_size* 1))
+
+        if self.progress_rect.width != self.tile.tile_size:
+            self.status_rect.x = tile_x
+            self.status_rect.y = tile_y - 4
+            self.progress_rect.x = tile_x
+            self.progress_rect.y = tile_y- 4
+            pygame.draw.rect(self.engine.screen,(255,0,0),self.status_rect) 
+            pygame.draw.rect(self.engine.screen,(0,255,0),self.progress_rect)
+
         
 
 
