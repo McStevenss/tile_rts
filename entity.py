@@ -16,7 +16,6 @@ class Entity:
         self.texture_key = texture_key
         texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas[self.texture_key])
         self.tile = Tile(self.engine,texture,(self.x,self.y))
-
         self.is_selected = False
         self.selected_texture = self.engine.texture_loader.get_texture(self.engine.tile_atlas["default"])
         self.selected_tile = Tile(self.engine,self.selected_texture,(self.x,self.y))
@@ -61,8 +60,11 @@ class Building(Entity):
         self.status_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size,2)
         self.progress_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, 1,2)
         
+        self.name = str.capitalize(texture_key.replace("_"," "))
+
         self.progress = 0
         self.resources_gathered = 0
+        self.team = -1
     
     def update(self, dt):
         super().update(dt)

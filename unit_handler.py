@@ -82,11 +82,11 @@ class UnitHandler:
         event_type, *event_data = data
         is_selected,unit = event_data
 
+
         if unit.is_selected:
             self.selected_units.append(unit)
         elif not unit.is_selected:
             self.selected_units.remove(unit)
-
 
 
     def draw_units(self, camera: Camera = None):

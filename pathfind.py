@@ -10,7 +10,7 @@ def astar(map, start, goal, additional_obstacles = None):
         return []
     
     if DIAGONAL_PATHING:
-        path_dirs = ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1))
+        path_dirs = ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1)) # R, L, D, U
     else:
         path_dirs = ((1,0),(-1,0),(0,1),(0,-1))
     while frontier:
@@ -27,7 +27,6 @@ def astar(map, start, goal, additional_obstacles = None):
             if additional_obstacles is not None:
                 if (x,y) in additional_obstacles.keys():
                     continue
-            # if not map.tiles[nx][ny].walkable: continue
 
             new_cost = cost_so_far[current] + 1
             neighbor = (nx, ny)

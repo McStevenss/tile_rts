@@ -40,6 +40,7 @@ class Engine:
         self.event_handler.subscribe("arrows_pressed",self.camera.on_arrows)
         self.event_handler.subscribe("m_released",self.on_mouse_pressed)
         self.event_handler.subscribe("toggle_debug",self.on_debug)
+        self.event_handler.subscribe("toggle_placement",self.on_placement)
 
         self.entity_handler = EntityHandler(self)
         self.unit_handler = UnitHandler(self)
@@ -85,6 +86,9 @@ class Engine:
         self.debug = not self.debug
         print("[DEBUG MODE]:",self.debug)
 
+    def on_placement(self,data):
+        self.placement_active = not self.placement_active
+
     def on_mouse_pressed(self,data):
         event_type, *event_data = data
         mb, rx,ry,tx,ty = event_data
@@ -103,6 +107,9 @@ class Engine:
                 self.event_handler.post_event("unit_selected", (unit.is_selected,unit))
                 
                 return
+            
+
+            self.event_handler.post_event("reset_entity_selection", ("Nothing pressed",1))
             
 
         if mb==2 and rx <= self.target_size[0] and ry <= self.target_size[1]:
@@ -125,9 +132,6 @@ class Engine:
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_v and keys[pygame.K_v]:
                    self.draw_debug = not self.draw_debug
-
-                if event.key == pygame.K_1 and keys[pygame.K_1]:
-                   self.placement_active = not self.placement_active
 
         self.handle_input(keys)
         self.kpressed = keys

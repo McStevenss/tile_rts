@@ -27,11 +27,9 @@ GRUNT = {
     "die":(40,43),
 }
 
-
 UNIT_ATLAS = {
     "grunt": GRUNT
 }
-
 
 ENTITY_CONFIG = {"building": Building}
 

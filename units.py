@@ -1,5 +1,5 @@
 from tile import Tile
-from config import *
+from config import UNIT_ATLAS
 import pygame
 
 class Animator():
@@ -55,7 +55,7 @@ class Unit:
         self.engine = engine
         self.texture_loader = self.engine.unit_handler.unit_texture_loader
         self.screen = self.engine.screen
-        
+        self.name = str.capitalize(texture_key)
         
         #Unit defaults
         self.x = pos[0]
