@@ -1,5 +1,6 @@
 import pygame
 from gui_utils.button import Button
+from gui_utils.status_window import Window
 from units import Unit
 from entity import Entity,Building
 RED = (255,0,0)
@@ -18,11 +19,9 @@ class GUI:
 
         self.screen = pygame.Surface((self.width,self.height)) 
 
-        #For sub menu windows
-        self.window = pygame.Surface((self.width,int(self.height*0.35)))
-        self.window_offset = (self.offset[0],int(self.height*0.65))
-        self.window.fill((255,0,0))
-        self.show_window = False
+        self.window = Window(width=self.width, height=int(self.height*0.35), offset=(0,int(self.height*0.65)))
+
+
 
         self.font = pygame.font.Font('freesansbold.ttf', 32)
         self.font_medium = pygame.font.Font('freesansbold.ttf', 24)
@@ -45,11 +44,13 @@ class GUI:
         ####################TEMPS######################
         self.add_text("Selected entities:", (0,0))
         self.placement_text_idx = self.add_text(f"Placement Active:{self.engine.placement_active}", (0,28*32))
-        self.add_button(self.screen, "Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
-        self.add_button(self.screen, "Toggle Debug", "toggle_debug", (40,self.height-64-100,128,64),is_toggle=True)
-        self.add_button(self.screen, "Placement", "toggle_placement", (175,self.height-64-100,128,64),is_toggle=True)
-        self.add_button(self.window, "test window", "test_pressed", (128,128,128,64),is_toggle=True)
-        # self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
+        self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
+        self.add_button("Placement", "toggle_placement", (40,self.height-64-100,128,64),is_toggle=True)
+
+        debug_button = Button("Path", (4,self.window.height-68 ,128,64), self.engine.event_handler, "toggle_debug", True)
+        self.window.add_button(debug_button)
+        # self.add_button("test window", "test_pressed", (128,128,128,64),is_toggle=True)
+
 
 
     #########################################################
@@ -72,26 +73,11 @@ class GUI:
         if len(self.selected_entities) == 1:
             self.draw_entity_submenu(self.selected_entities[0])
 
-        else:
-            for entity in self.selected_entities:
+        for entity in self.selected_entities:
                 self.show_selected_entity_info(entity)
 
         if len(self.selected_entities) == 0 or len(self.selected_entities) > 1:
-            self.show_window = False
-
-        if self.show_window:
-            for button in self.buttons:
-                if button.surface_owner == self.window:
-                    button.enabled = True
-                else:
-                    button.enabled = False
-        else:
-            for button in self.buttons:
-                if button.surface_owner == self.window:
-                    button.enabled = False
-                else:
-                    button.enabled = True
-
+            self.window.enabled = False
 
 
         # Wrap renderpackages in UI
@@ -119,8 +105,8 @@ class GUI:
 
         return len(self.texts)
 
-    def add_button(self, surface, button_text, event_call, size, is_toggle=False):
-        new_button = Button(surface, button_text, size, self.engine.event_handler, event_call, is_toggle)
+    def add_button(self, button_text, event_call, size, is_toggle=False):
+        new_button = Button(button_text, size, self.engine.event_handler, event_call, is_toggle)
         self.buttons.append(new_button)
 
     def on_selected_entity(self,data):
@@ -135,38 +121,25 @@ class GUI:
 
     def on_gui_pressed(self,data):
         event_type, *event_data = data
-        _, mb,rx,ry,tx,ty = event_data
+        print(event_data)
+        # _, mb,rx,ry,tx,ty = event_data
+        rx,ry= event_data
 
         gx,gy = rx-self.offset[0],ry
-        wx,wy = rx-self.window_offset[0], ry-self.window_offset[1]
-        for button in self.buttons:
-            
-            if button.surface_owner == self.screen:
-                tx,ty = gx,gy
-            elif button.surface_owner == self.window:
-                tx,ty = wx,wy
-            else:
-                return
+        # wx,wy = rx-self.window_offset[0], ry-self.window_offset[1]
 
-            if button.enabled:
-                if button.did_click(tx,ty):
-                    button.click()
+
+        if not self.window.did_click(gx,gy):
+            for button in self.buttons:
+                if button.enabled:
+                    if button.did_click(gx,gy):
+                        button.click()
 
     def show_selected_entity_info(self,entity):
         package = []
 
         package.append(self.get_text_renderable(f"X: {int(entity.x)}",(64,1+len(self.render_packages))))
         package.append(self.get_text_renderable(f"Y: {int(entity.y)}",(155,1+len(self.render_packages))))
-
-        if hasattr(entity, "available_resources"):
-            package.append(self.get_text_renderable(f"Res: {entity.available_resources}",(250,1+len(self.render_packages))))
-
-        if hasattr(entity, "health"):
-            package.append(self.get_text_renderable(f"HP: {entity.health}",(250,1+len(self.render_packages))))
-
-        if hasattr(entity, "team"):
-            package.append(self.get_text_renderable(f"Team: {entity.team}",(250,1+len(self.render_packages))))
-
 
         texture_scaled = pygame.transform.scale(entity.tile.texture, (32,32))
         texture_coords = (0,1+len(self.render_packages))
@@ -180,30 +153,38 @@ class GUI:
 
 
     def draw_entity_submenu(self,entity):
-        self.window.fill((0,0,0))
         if type(entity) not in [Building, Unit]:
             self.show_window = False
             return
-        
-        #Window border
-        pygame.draw.rect(self.window, (255,255,255), (0,0,self.window.get_width(),self.window.get_height()), 2)
 
+        package = []    
+        line_height = 30
+        first_row = 54
+        num_attrs = 0
         #Entity/Unit texture
         texture_scaled = pygame.transform.scale(entity.tile.texture, (64,64))
-        texture_coords = (32,32)
-        self.window.blit(texture_scaled, texture_coords)
+        texture_coords = (32,64)
+        package.append((texture_scaled, texture_coords))
+        # self.window.blit(texture_scaled, texture_coords)
 
         #Info text
-        texts_to_draw = []
-        texts_to_draw.append(self.get_text_renderable(f"{entity.name}",(128,54)))
-        texts_to_draw.append(self.get_text_renderable(f"Team: {entity.team}",(128,108)))
+        package.append(self.get_text_renderable(f"{entity.name}",(128,first_row)))
+
+        if hasattr(entity, "available_resources"):
+            num_attrs += 1
+            package.append(self.get_text_renderable(f"Res: {entity.available_resources}",(128, first_row + (num_attrs*line_height))))
+
+        if hasattr(entity, "health"):
+            num_attrs += 1
+            package.append(self.get_text_renderable(f"HP: {entity.health}",(128, first_row + (num_attrs*line_height))))
+
+        if hasattr(entity, "team"):
+            num_attrs += 1
+            package.append(self.get_text_renderable(f"Team: {entity.team}",(128,first_row + (num_attrs*line_height))))
 
 
-        for text_renderable, coord in texts_to_draw:
-            self.window.blit(text_renderable, coord)
-
-
-        self.show_window = True
+        self.window.set_render_package(package)
+        self.window.enabled = True
 
     def reset_selected(self,data):
         self.selected_entities = []
@@ -214,7 +195,7 @@ class GUI:
 
         for button in self.buttons:
             # button.draw(self.screen)
-            button.draw(button.surface_owner)
+            button.draw(self.screen)
 
         for text,rect in self.texts:
             self.screen.blit(text,rect)
@@ -224,8 +205,7 @@ class GUI:
                 coord = (coord[0],(idx+1)*self.row_height)
                 self.screen.blit(renderable,coord)
 
-        
-        self.display_screen.blit(self.screen,self.offset)
 
-        if self.show_window:
-            self.display_screen.blit(self.window,self.window_offset)
+        self.window.draw(self.screen)
+
+        self.display_screen.blit(self.screen,self.offset)

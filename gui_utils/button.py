@@ -3,14 +3,13 @@ import pygame
 
 
 class Button:
-    def __init__(self, surface_owner, text, size, event_handler, on_pressed_event="button_clicked", is_toggle=False):
+    def __init__(self, text, size, event_handler, on_pressed_event="button_clicked", is_toggle=False):
         self.x = size[0]
         self.y = size[1]
         self.w = size[2]
         self.h = size[3]
         self.text = text
         self.is_toggle = is_toggle
-        self.surface_owner = surface_owner
 
         self.toggled = False
         self.enabled = True
@@ -27,7 +26,6 @@ class Button:
 
 
     def did_click(self,x,y):
-        
         return self.rect.collidepoint(x,y)
     
     def click(self):

@@ -123,7 +123,8 @@ class Engine:
 
 
         if rx >= self.gui_offset[0]:
-            self.event_handler.post_event("gui_pressed",data)
+            # self.event_handler.post_event("gui_pressed",data)
+            self.event_handler.post_event("gui_pressed",(rx,ry))
 
     def handle_events(self):
         keys = pygame.key.get_pressed()
