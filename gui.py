@@ -39,6 +39,7 @@ class GUI:
         self.engine.event_handler.subscribe("gui_pressed",self.on_gui_pressed)
         self.engine.event_handler.subscribe("reset_entity_selection",self.reset_selected)
         self.engine.event_handler.subscribe("entity_remove",self.on_entity_removed)
+        self.engine.event_handler.subscribe("exit_window",self.on_exit_window)
 
 
         ####################TEMPS######################
@@ -46,6 +47,8 @@ class GUI:
         self.placement_text_idx = self.add_text(f"Placement Active:{self.engine.placement_active}", (0,28*32))
         self.add_button("Reset Selection", "reset_entity_selection", (40,self.height-64-32,128,64))
         self.add_button("Placement", "toggle_placement", (40,self.height-64-100,128,64),is_toggle=True)
+
+        self.window.add_button(Button("X",(self.width-35 ,2,32,32),self.engine.event_handler,"exit_window"))
 
         debug_button = Button("Path", (4,self.window.height-68 ,128,64), self.engine.event_handler, "toggle_debug", True)
         self.window.add_button(debug_button)
@@ -63,6 +66,11 @@ class GUI:
         if entity in self.selected_entities:
             self.selected_entities.remove(entity)
 
+    def on_exit_window(self,data):
+        if len(self.selected_entities) == 1:
+            self.window.enabled=False
+            self.selected_entities 
+
     def update(self):
         self.render_packages = []
 
@@ -70,7 +78,8 @@ class GUI:
         self.texts[self.placement_text_idx-1] = (placement_text, placement_rect)
 
 
-        if len(self.selected_entities) == 1:
+        # if len(self.selected_entities) == 1:
+        if self.window.enabled and len(self.selected_entities) == 1:
             self.draw_entity_submenu(self.selected_entities[0])
 
         for entity in self.selected_entities:
@@ -119,10 +128,11 @@ class GUI:
         if not is_selected and entity in self.selected_entities:
             self.selected_entities.remove(entity)
 
+        if len(self.selected_entities) == 1:
+            self.window.enabled = True
+
     def on_gui_pressed(self,data):
         event_type, *event_data = data
-        print(event_data)
-        # _, mb,rx,ry,tx,ty = event_data
         rx,ry= event_data
 
         gx,gy = rx-self.offset[0],ry

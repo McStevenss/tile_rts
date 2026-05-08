@@ -1,7 +1,6 @@
 import pygame
 
 
-
 class Window:
     def __init__(self, width, height, offset):
         self.width = width
@@ -9,10 +8,11 @@ class Window:
         self.offset = offset
 
         self.screen = pygame.Surface((self.width,self.height))
-        self.enabled = True
+        self.enabled = False
         
         self.buttons = []
         self.package = []
+
 
     def did_click(self,x,y):
         
