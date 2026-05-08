@@ -1,8 +1,8 @@
 import pygame
+from config import *
 from texture_loader import TextureLoader
 from map import Map
 from player import Player
-from config import *
 from entity import Building
 from mouse import GameMouse
 from events import EventHandler

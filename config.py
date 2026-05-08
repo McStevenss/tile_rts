@@ -1,7 +1,3 @@
-from entity import *
-from enum import Enum
-
-
 TILE_ATLAS = {
     (0,0,0): (10,3),
     (1,1,1): [(0,1),(4,1)],
@@ -27,11 +23,14 @@ GRUNT = {
     "die":(40,43),
 }
 
-UNIT_ATLAS = {
-    "grunt": GRUNT
+GOLDMINE = {
+    "idle": (0,3)
 }
 
-ENTITY_CONFIG = {"building": Building}
+ANIMATION_ATLAS = {
+    "grunt": GRUNT,
+    "goldmine": GOLDMINE,
+}
 
 MAP_SIZE = (64,64)
 DIAGONAL_PATHING = True

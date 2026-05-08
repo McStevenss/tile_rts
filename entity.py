@@ -2,6 +2,8 @@ from tile import Tile
 import pygame
 from enum import Enum
 import math
+from animator import Animator
+from texture_loader import TextureLoader
 
 class ResourceType(Enum):
     WOOD = 1
@@ -69,7 +71,6 @@ class Building(Entity):
     
     def update(self, dt):
         super().update(dt)
-
         self.tick(dt)
       
 
@@ -102,7 +103,6 @@ class Mine(Entity):
         self.status_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
         self.progress_rect = pygame.Rect(self.tile.real_x, self.tile.real_y-4, self.tile.tile_size, 2)
         self.tick_width = math.ceil(self.tile.tile_size / self.available_resources)
-
     
     def update(self, dt):
         super().update(dt)

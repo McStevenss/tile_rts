@@ -19,7 +19,6 @@ class EntityHandler:
     def on_remove_entity(self,data):
         event_type, *event_data = data
         entity = event_data[0]
-        print(entity, data)
         if (entity.x,entity.y) in self.entities.keys():
             del self.entities[(entity.x,entity.y)]
 
@@ -77,6 +76,22 @@ class EntityHandler:
                     entities_in_area.append(self.entities[(x,y)])
 
         return entities_in_area
+    
+    def get_closest_building(self, x, y, team=None):
+
+        closest_building = None
+        for (bx,by), entity in self.entities.items():
+
+            if closest_building is None and type(entity) == Building:
+
+                if team is not None and entity.team != team:
+                    continue
+
+                dist = math.dist((bx,by),(x,y))
+                closest_building = (dist, entity)
+
+        return closest_building
+
 
     def update_entities(self, dt):
         for entity in self.entities.values():
@@ -97,8 +112,8 @@ class EntityHandler:
         entity_tile, entity_type, rx,ry, tx, ty = event_data
 
         if rx <= self.engine.target_size[0] and ry <= self.engine.target_size[1]:
-            self.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self.engine,texture_key=entity_tile,pos=(tx,ty)))
-
+            # self.add_entity(ENTITY_CONFIG.get(entity_type,Building)(self.engine,texture_key=entity_tile,pos=(tx,ty)))
+            self.add_entity(Building(self.engine,texture_key=entity_tile,pos=(tx,ty)))
 
     def draw_entities(self, camera: Camera = None):
 
